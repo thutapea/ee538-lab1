@@ -1,10 +1,10 @@
-// EE538 Lab 1: Matrix multiplication with Divide & Conquer and Strassen's method
-// Author: thutapea (spotifytimh@gmail.com)
+//Lab 1
+// thutapea@usc.edu
 
 #include <ctime>
 #include <fstream>
 
-// Allocates an n x n matrix of zeros using double pointers.
+// Allocate n x n  zeros 
 int **createMatrix(int n) {
   int **m = new int *[n];
   for (int i = 0; i < n; i++) {
@@ -39,7 +39,7 @@ void subtractMatrix(int **A, int **B, int **C, int n) {
   }
 }
 
-// Copies the n x n block of src starting at (row, col) into dest.
+// Copy n x n
 void copyFromBlock(int **src, int **dest, int row, int col, int n) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
@@ -48,7 +48,6 @@ void copyFromBlock(int **src, int **dest, int row, int col, int n) {
   }
 }
 
-// Copies the n x n matrix src into the block of dest starting at (row, col).
 void copyToBlock(int **src, int **dest, int row, int col, int n) {
   for (int i = 0; i < n; i++) {
     for (int j = 0; j < n; j++) {
@@ -57,7 +56,7 @@ void copyToBlock(int **src, int **dest, int row, int col, int n) {
   }
 }
 
-// Question 1: simple divide and conquer, 8 recursive multiplications.
+// Q1: simple divide and conque8 recursive multiplications
 void divideAndConquer(int **A, int **B, int **C, int n) {
   if (n == 1) {
     C[0][0] = A[0][0] * B[0][0];
@@ -92,22 +91,22 @@ void divideAndConquer(int **A, int **B, int **C, int n) {
   int **left = createMatrix(h);
   int **right = createMatrix(h);
 
-  // C11 = A11*B11 + A12*B21
+  //A11*B11 + A12*B21
   divideAndConquer(a11, b11, left, h);
   divideAndConquer(a12, b21, right, h);
   addMatrix(left, right, c11, h);
 
-  // C12 = A11*B12 + A12*B22
+  // A11*B12 + A12*B22
   divideAndConquer(a11, b12, left, h);
   divideAndConquer(a12, b22, right, h);
   addMatrix(left, right, c12, h);
 
-  // C21 = A21*B11 + A22*B21
+  //  A21*B11 + A22*B21
   divideAndConquer(a21, b11, left, h);
   divideAndConquer(a22, b21, right, h);
   addMatrix(left, right, c21, h);
 
-  // C22 = A21*B12 + A22*B22
+  //  A21*B12 + A22*B22
   divideAndConquer(a21, b12, left, h);
   divideAndConquer(a22, b22, right, h);
   addMatrix(left, right, c22, h);
@@ -133,7 +132,7 @@ void divideAndConquer(int **A, int **B, int **C, int n) {
   deleteMatrix(right, h);
 }
 
-// Question 2: Strassen's method, 7 recursive multiplications.
+// Q2: Strassen  7 recursive mult
 void strassen(int **A, int **B, int **C, int n) {
   if (n == 1) {
     C[0][0] = A[0][0] * B[0][0];
@@ -171,33 +170,33 @@ void strassen(int **A, int **B, int **C, int n) {
   int **t1 = createMatrix(h);
   int **t2 = createMatrix(h);
 
-  // M1 = (A11 + A22) * (B11 + B22)
+  //  (A11 + A22) * (B11 + B22)
   addMatrix(a11, a22, t1, h);
   addMatrix(b11, b22, t2, h);
   strassen(t1, t2, m1, h);
 
-  // M2 = (A21 + A22) * B11
+  // (A21 + A22) * B11
   addMatrix(a21, a22, t1, h);
   strassen(t1, b11, m2, h);
 
-  // M3 = A11 * (B12 - B22)
+  //  A11 * (B12 - B22)
   subtractMatrix(b12, b22, t2, h);
   strassen(a11, t2, m3, h);
 
-  // M4 = A22 * (B21 - B11)
+  // A22 * (B21 - B11)
   subtractMatrix(b21, b11, t2, h);
   strassen(a22, t2, m4, h);
 
-  // M5 = (A11 + A12) * B22
+  //  (A11 + A12) * B22
   addMatrix(a11, a12, t1, h);
   strassen(t1, b22, m5, h);
 
-  // M6 = (A21 - A11) * (B11 + B12)
+  //  (A21 - A11) * (B11 + B12)
   subtractMatrix(a21, a11, t1, h);
   addMatrix(b11, b12, t2, h);
   strassen(t1, t2, m6, h);
 
-  // M7 = (A12 - A22) * (B21 + B22)
+  //  (A12 - A22) * (B21 + B22)
   subtractMatrix(a12, a22, t1, h);
   addMatrix(b21, b22, t2, h);
   strassen(t1, t2, m7, h);
@@ -207,18 +206,18 @@ void strassen(int **A, int **B, int **C, int n) {
   int **c21 = createMatrix(h);
   int **c22 = createMatrix(h);
 
-  // C11 = M1 + M4 - M5 + M7
+  //  = M1 + M4 - M5 + M7
   addMatrix(m1, m4, t1, h);
   subtractMatrix(t1, m5, t2, h);
   addMatrix(t2, m7, c11, h);
 
-  // C12 = M3 + M5
+  // = M3 + M5
   addMatrix(m3, m5, c12, h);
 
-  // C21 = M2 + M4
+  //  = M2 + M4
   addMatrix(m2, m4, c21, h);
 
-  // C22 = M1 - M2 + M3 + M6
+  //  = M1 - M2 + M3 + M6
   subtractMatrix(m1, m2, t1, h);
   addMatrix(t1, m3, t2, h);
   addMatrix(t2, m6, c22, h);
@@ -251,8 +250,8 @@ void strassen(int **A, int **B, int **C, int n) {
   deleteMatrix(c22, h);
 }
 
-// Writes the top-left n x n part of the result: each number followed by a
-// space, one row per line.
+// Writes  top-left n x n part of result formatted
+// 
 void writeMatrix(const char *fileName, int **M, int n) {
   std::ofstream out(fileName);
   for (int i = 0; i < n; i++) {
@@ -273,7 +272,7 @@ int main() {
   int n = 0;
   in >> n;
 
-  // Pad up to the next power of two so the matrices can always be halved.
+  // Pad up to the next power of two 
   int size = 1;
   while (size < n) {
     size = size * 2;
